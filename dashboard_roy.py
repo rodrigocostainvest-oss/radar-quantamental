@@ -2,33 +2,33 @@ import streamlit as st
 import requests
 
 # ==========================================
-# CONFIGURAÇÃO DE ACESSO (SUA TRAVA DE SEGURANÇA)
+# ACCESS CONFIGURATION (SECURITY LOCK)
 # ==========================================
 CODIGO_CORRETO = "MaranhaoQuant_2026" 
 
 # ==========================================
-# CONFIGURAÇÃO DA PÁGINA
+# PAGE CONFIGURATION
 # ==========================================
-st.set_page_config(page_title="Radar Quantamental | VIP", layout="centered")
+st.set_page_config(page_title="Quantamental Radar | VIP", layout="centered")
 
-# --- BARRA LATERAL DE LOGIN ---
-st.sidebar.header("🔑 Acesso Restrito")
-senha_digitada = st.sidebar.text_input("Insira seu Código VIP:", type="password")
+# --- LOGIN SIDEBAR ---
+st.sidebar.header("🔑 Restricted Access")
+senha_digitada = st.sidebar.text_input("Enter your VIP Access Key:", type="password")
 
 if senha_digitada != CODIGO_CORRETO:
-    st.error("🚨 ACESSO BLOQUEADO")
-    st.info("Este radar é exclusivo para assinantes. Se você já é assinante, insira o código na barra lateral esquerda. Se ainda não tem acesso, adquira sua licença no Gumroad.")
+    st.error("🚨 ACCESS DENIED")
+    st.info("This radar is exclusive to subscribers. If you have an active subscription, enter your key in the left sidebar. If not, get your license on Gumroad.")
     st.stop()
 
-# --- CÓDIGO PRINCIPAL ---
-st.title("🛡️ Radar de Risco Quantamental")
-st.markdown("**Modelo Institucional:** A.D. Roy (Safety-First) + Oráculos Pyth Network")
-st.write("Monitoramento 24/7 de distorções e incerteza no mercado de criptoativos.")
+# --- MAIN CODE ---
+st.title("🛡️ Quantamental Risk Radar")
+st.markdown("**Institutional Model:** A.D. Roy (Safety-First) + Pyth Network Oracles")
+st.write("24/7 monitoring of market distortions and uncertainty in crypto assets.")
 st.divider()
 
 @st.cache_data(ttl=3600) 
 def buscar_ativos_oficiais():
-    fallback = {"🔥 BTC/USD (Modo de Segurança)": "e62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43"}
+    fallback = {"🔥 BTC/USD (Safe Mode)": "e62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43"}
     try:
         response = requests.get("https://hermes.pyth.network/v2/price_feeds").json()
         catalogo = {}
@@ -61,28 +61,28 @@ def buscar_ativos_oficiais():
 
 ativos = buscar_ativos_oficiais()
 
-ativo_escolhido = st.selectbox("Selecione o ativo que deseja analisar:", list(ativos.keys()))
+ativo_escolhido = st.selectbox("Select the asset you want to analyze:", list(ativos.keys()))
 ativo_id = ativos[ativo_escolhido]
 if ativo_id.startswith("0x"): ativo_id = ativo_id[2:]
 url = f"https://hermes.pyth.network/v2/updates/price/latest?ids[]={ativo_id}"
 
-if st.button("🔄 Atualizar Radar Agora"):
-    with st.spinner(f"Conectando aos nós da Pyth..."):
+if st.button("🔄 Update Radar Now"):
+    with st.spinner(f"Connecting to Pyth nodes..."):
         try:
             response = requests.get(url).json()
             if not response.get('parsed'):
-                st.error("A rede Pyth não retornou dados para este ID no momento.")
+                st.error("The Pyth network did not return data for this ID right now.")
             else:
                 p = response['parsed'][0]['price']
                 preco_real = int(p['price']) * (10 ** int(p['expo']))
                 incerteza = int(p['conf']) * (10 ** int(p['expo']))
                 risco_percentual = (incerteza / preco_real) * 100 if preco_real != 0 else 0
                 
-                st.subheader("📊 Leitura de Mercado Real-Time")
+                st.subheader("📊 Real-Time Market Reading")
                 col1, col2, col3 = st.columns(3)
                 nome_limpo = ativo_escolhido.split("(")[0].replace("🔥 ", "").replace("💎 ", "").strip()
                 
-                # Formatação Dinâmica Segura (A correção do erro)
+                # Dynamic Safe Formatting
                 if preco_real < 0.01:
                     f_p = f"${preco_real:,.8f}"
                     f_e = f"± ${incerteza:,.8f}"
@@ -93,18 +93,18 @@ if st.button("🔄 Atualizar Radar Agora"):
                     f_p = f"${preco_real:,.2f}"
                     f_e = f"± ${incerteza:,.2f}"
                 
-                col1.metric("Ativo", nome_limpo)
-                col2.metric("Preço Global", f_p)
-                col3.metric("Margem de Erro", f_e)
+                col1.metric("Asset", nome_limpo)
+                col2.metric("Global Price", f_p)
+                col3.metric("Margin of Error", f_e)
                 st.divider()
-                st.subheader("🧠 Decisão Algorítmica (Safety-First):")
+                st.subheader("🧠 Algorithmic Decision (Safety-First):")
                 if risco_percentual <= 0.15:
-                    st.success(f"✅ **STATUS VERDE ({risco_percentual:.3f}%):** Liquidez normal. Seguro para posições.")
+                    st.success(f"✅ **GREEN STATUS ({risco_percentual:.3f}%):** Normal liquidity. Safe to hold positions.")
                 elif risco_percentual <= 0.50:
-                    st.warning(f"⚠️ **STATUS AMARELO ({risco_percentual:.3f}%):** Atenção. Divergência nos oráculos. Reduza alavancagem.")
+                    st.warning(f"⚠️ **YELLOW STATUS ({risco_percentual:.3f}%):** Oracle divergence alert. Reduce leverage.")
                 else:
-                    st.error(f"🚨 **STATUS VERMELHO ({risco_percentual:.3f}%):** PERIGO! Colapso de liquidez. Proteja o capital.")
+                    st.error(f"🚨 **RED STATUS ({risco_percentual:.3f}%):** DANGER! Liquidity collapse. Protect capital.")
         except Exception:
-            st.error("Erro interno na comunicação blockchain.")
+            st.error("Internal error. The market might be facing extreme latency.")
 else:
-    st.info("👆 Clique no botão acima para puxar os dados.")
+    st.info("👆 Click the button above to pull live on-chain data.")
